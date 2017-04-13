@@ -1,4 +1,4 @@
-# RxFirebase
+# RxTasks for GMS
 [![CircleCI](https://circleci.com/gh/yongjhih/rxtasks.svg?style=shield)](https://circleci.com/gh/yongjhih/rxtasks)
 [![codecov](https://codecov.io/gh/yongjhih/rxtasks/branch/master/graph/badge.svg)](https://codecov.io/gh/yongjhih/rxtasks)
 
