@@ -21,6 +21,10 @@ compile 'com.yongjhih.rxtasks:rxtasks2-tasks:0.0.1'
 compile 'com.yongjhih.rxtasks:rxtasks2-tasks-kotlin:0.0.1' // optional
 ```
 
+## See Also
+
+* RxFirebase: https://github.com/yongjhih/rxfirebase
+
 ## License
 
 ```
