@@ -1,7 +1,7 @@
 package rxtasks2;
 
-import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
+import io.reactivex.annotations.CheckReturnValue;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -27,7 +27,7 @@ public final class RxTask {
      * @param <R>
      * @return
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     public static <R> Single<R> single(@NonNull final Callable<Task<R>> callable) {
         return Single.fromCallable(callable).flatMap(new Function<Task<R>,
@@ -44,29 +44,18 @@ public final class RxTask {
      * @param <R>
      * @return
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     public static <R> Single<R> single(@NonNull final Task<R> task) {
         return Single.create(new SingleOnSubscribe<R>() {
             @Override
             public void subscribe(@NonNull final SingleEmitter<R> emit) throws Exception {
-                task.addOnCompleteListener(new OnCompleteListener<R>() {
-                    @Override
-                    public void onComplete(@NonNull final Task<R> task) {
-                        // TODO isDisposed
-                        if (task.isSuccessful()) {
-                            emit.onSuccess(task.getResult());
-                        } else {
-                            Exception e = task.getException();
-                            emit.onError(e != null ? e : new RuntimeException());
-                        }
-                    }
-                });
+                task.addOnCompleteListener(listener(emit));
             }
         });
     }
 
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     public static <R> Completable completes(@NonNull final Callable<Task<R>> callable) {
         return Single.fromCallable(callable).flatMapCompletable(
@@ -83,24 +72,13 @@ public final class RxTask {
      * @param <R> Usually &lt;Void&gt;
      * @return
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     public static <R> Completable completes(@NonNull final Task<R> task) {
         return Completable.create(new CompletableOnSubscribe() {
             @Override
             public void subscribe(@NonNull final CompletableEmitter emit) throws Exception {
-                task.addOnCompleteListener(new OnCompleteListener<R>() {
-                    @Override
-                    public void onComplete(@NonNull final Task<R> task) {
-                        // TODO isDisposed
-                        if (task.isSuccessful()) {
-                            emit.onComplete();
-                        } else {
-                            Exception e = task.getException();
-                            emit.onError(e != null ? e : new RuntimeException());
-                        }
-                    }
-                });
+                task.addOnCompleteListener(RxTask.<R>listener(emit));
             }
         });
     }
@@ -110,7 +88,7 @@ public final class RxTask {
      * @param <R>
      * @return
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     public static <R> Maybe<R> maybe(@NonNull final Callable<Task<R>> callable) {
         return Single.fromCallable(callable).flatMapMaybe(
@@ -127,38 +105,79 @@ public final class RxTask {
      * @param <R>
      * @return
      */
-    @CheckResult
+    @CheckReturnValue
     @NonNull
     public static <R> Maybe<R> maybe(@NonNull final Task<R> task) {
         return Maybe.create(new MaybeOnSubscribe<R>() {
             @Override
             public void subscribe(@NonNull final MaybeEmitter<R> emit) throws Exception {
-                task.addOnCompleteListener(new OnCompleteListener<R>() {
-                    @Override
-                    public void onComplete(@NonNull final Task<R> task) {
-                        // TODO isDisposed
-                        if (task.isSuccessful()) {
-                            R result = task.getResult();
-                            if (result != null) {
-                                emit.onSuccess(result);
-                            }
-                            emit.onComplete();
-                        } else {
-                            Exception e = task.getException();
-                            emit.onError(e != null ? e : new RuntimeException());
-                        }
-                    }
-                });
+                task.addOnCompleteListener(listener(emit));
             }
         });
     }
+    @NonNull
+    @CheckReturnValue
+    public static <R> OnCompleteListener<R> listener(@NonNull final MaybeEmitter<R> emit) {
+        return new OnCompleteListener<R>() {
+            @Override
+            public void onComplete(@NonNull final Task<R> task) {
+                if (!emit.isDisposed()) {
+                    if (task.isSuccessful()) {
+                        R result = task.getResult();
+                        if (result != null) {
+                            emit.onSuccess(result);
+                        }
+                        emit.onComplete();
+                    } else {
+                        Exception e = task.getException();
+                        emit.onError(e != null ? e : new RuntimeException());
+                    }
+                }
+            }
+        };
+    }
 
+    @NonNull
+    @CheckReturnValue
+    public static <R> OnCompleteListener<R> listener(@NonNull final CompletableEmitter emit) {
+        return new OnCompleteListener<R>() {
+            @Override
+            public void onComplete(@NonNull final Task<R> task) {
+                if (!emit.isDisposed()) {
+                    if (task.isSuccessful()) {
+                        emit.onComplete();
+                    } else {
+                        Exception e = task.getException();
+                        emit.onError(e != null ? e : new RuntimeException());
+                    }
+                }
+            }
+        };
+    }
+
+    @NonNull
+    @CheckReturnValue
+    public static <R> OnCompleteListener<R> listener(@NonNull final SingleEmitter<R> emit) {
+        return new OnCompleteListener<R>() {
+            @Override
+            public void onComplete(@NonNull final Task<R> task) {
+                if (!emit.isDisposed()) {
+                    if (task.isSuccessful()) {
+                        emit.onSuccess(task.getResult());
+                    } else {
+                        Exception e = task.getException();
+                        emit.onError(e != null ? e : new RuntimeException());
+                    }
+                }
+            }
+        };
+    }
     ///**
     // * @param callable
     // * @param <R>
     // * @return
     // */
-    //@CheckResult
+    //@CheckReturnValue
     //@NonNull
     //public static <R> Observable<R> observe(
     // @NonNull final Callable<Task<R>> callable, @NonNull final Action onDispose) {
@@ -176,7 +195,7 @@ public final class RxTask {
     // * @param <R>
     // * @return
     // */
-    //@CheckResult
+    //@CheckReturnValue
     //@NonNull
     //public static <R> Observable<R> observe(
     // @NonNull final Task<R> task, @NonNull final Action onDispose) {
@@ -184,19 +203,7 @@ public final class RxTask {
     //        @Override
     //        public void subscribe(@NonNull final ObservableEmitter<R> emit) throws Exception {
     //            emit.setDisposable(Disposables.fromAction(onDispose));
-    //            task.addOnCompleteListener(new OnCompleteListener<R>() {
-    //                @Override
-    //                public void onComplete(@NonNull final Task<R> task) {
-    //                    // TODO isDisposed
-    //                    if (task.isSuccessful()) {
-    //                        R result = task.getResult();
-    //                        if (result != null) emit.onNext(result);
-    //                    } else {
-    //                        Exception e = task.getException();
-    //                        emit.onError(e != null ? e : new RuntimeException());
-    //                    }
-    //                }
-    //            });
+    //            task.addOnCompleteListener(listener(emit));
     //        }
     //    });
     //}
