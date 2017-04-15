@@ -15,3 +15,7 @@ inline fun <T> Task<T>.completes()
 inline fun <T> Task<T>.single()
         : Single<T>
         = RxTask.single { this }
+
+inline fun <T> Task<T>.maybe()
+        : Maybe<T>
+        = RxTask.maybe { this }

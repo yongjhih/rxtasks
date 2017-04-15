@@ -1,7 +1,7 @@
 package rxtasks2;
 
-import android.support.annotation.NonNull;
 import io.reactivex.annotations.CheckReturnValue;
+import io.reactivex.annotations.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -55,6 +55,11 @@ public final class RxTask {
         });
     }
 
+    /**
+     * @param callable
+     * @param <R>
+     * @return
+     */
     @CheckReturnValue
     @NonNull
     public static <R> Completable completes(@NonNull final Callable<Task<R>> callable) {
@@ -115,6 +120,12 @@ public final class RxTask {
             }
         });
     }
+
+    /**
+     * @param emit
+     * @param <R>
+     * @return
+     */
     @NonNull
     @CheckReturnValue
     public static <R> OnCompleteListener<R> listener(@NonNull final MaybeEmitter<R> emit) {
@@ -137,6 +148,11 @@ public final class RxTask {
         };
     }
 
+    /**
+     * @param emit
+     * @param <R>
+     * @return
+     */
     @NonNull
     @CheckReturnValue
     public static <R> OnCompleteListener<R> listener(@NonNull final CompletableEmitter emit) {
@@ -155,6 +171,11 @@ public final class RxTask {
         };
     }
 
+    /**
+     * @param emit
+     * @param <R>
+     * @return
+     */
     @NonNull
     @CheckReturnValue
     public static <R> OnCompleteListener<R> listener(@NonNull final SingleEmitter<R> emit) {
@@ -172,6 +193,7 @@ public final class RxTask {
             }
         };
     }
+
     ///**
     // * @param callable
     // * @param <R>
