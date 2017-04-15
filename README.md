@@ -12,6 +12,10 @@ RxTasks.completes(() -> firebaseRemoteConfig.fetch()).subscribe();
 RxTasks.single(() -> firebaseUser.getToken()).map(token -> token.getToken()).subscribe();
 ```
 
+```java
+RxTasks.maybe(() -> firebaseUser.getToken()).map(token -> token.getToken()).subscribe();
+```
+
 See [official documentation](https://firebase.google.com/docs/) for the details.
 
 ## Installation
