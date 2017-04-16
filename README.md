@@ -21,8 +21,8 @@ See [official documentation](https://firebase.google.com/docs/) for the details.
 ## Installation
 
 ```gradle
-compile 'com.yongjhih.rxtasks:rxtasks2-tasks:-SNAPSHOT'
-compile 'com.yongjhih.rxtasks:rxtasks2-tasks-kotlin:-SNAPSHOT' // optional
+compile 'com.github.yongjhih.rxtasks:rxtasks2-tasks:-SNAPSHOT'
+compile 'com.github.yongjhih.rxtasks:rxtasks2-tasks-kotlin:-SNAPSHOT' // optional
 ```
 
 ## See Also
