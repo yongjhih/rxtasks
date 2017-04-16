@@ -22,7 +22,7 @@ repositories {
 }
 
 apply plugin: 'com.android.library'
-//apply plugin: 'jacoco-android'
+apply plugin: 'jacoco-android'
 apply plugin: 'kotlin-android' // for testing only
 
 // ref. https://github.com/JetBrains/spek/issues/117
@@ -100,5 +100,5 @@ tasks.withType(Test) {
 
 apply from: 'javadoc.gradle'
 apply plugin: 'com.github.dcendents.android-maven'
-apply from: 'jacoco.gradle'
+//apply from: 'jacoco.gradle'
 apply from: 'checkstyle.gradle'
