@@ -119,4 +119,49 @@ public class RxTaskTest {
         verify(mockHelloTask).addOnCompleteListener(any(OnCompleteListener.class));
         verify(mockHelloTask).getException();
     }
+
+    @Test
+    public void testMaybe() {
+        final String hello = "Hello, world!";
+        when(mockHelloTask.getResult())
+                .thenReturn(hello);
+        when(mockHelloTask.isSuccessful())
+                .thenReturn(true);
+        when(mockHelloTask.addOnCompleteListener(onComplete.capture()))
+                .thenReturn(mockHelloTask);
+
+        TestObserver<String> obs = TestObserver.create();
+        RxTask.maybe(mockHelloTask).subscribe(obs);
+        verify(mockHelloTask).addOnCompleteListener(onComplete.capture());
+        onComplete.getValue().onComplete(mockHelloTask);
+
+        obs.assertValue(hello)
+                .assertNoErrors()
+                .assertComplete();
+
+        verify(mockHelloTask).addOnCompleteListener(any(OnCompleteListener.class));
+        verify(mockHelloTask).getResult();
+    }
+
+    @Test
+    public void testMaybeFailure() {
+        final String hello = "Hello, world!";
+        when(mockHelloTask.isSuccessful())
+                .thenReturn(false);
+        when(mockHelloTask.getException())
+                .thenReturn(new RuntimeException(hello));
+        when(mockHelloTask.addOnCompleteListener(onComplete.capture()))
+                .thenReturn(mockHelloTask);
+
+        TestObserver<String> obs = TestObserver.create();
+        RxTask.maybe(mockHelloTask).subscribe(obs);
+        verify(mockHelloTask).addOnCompleteListener(onComplete.capture());
+        onComplete.getValue().onComplete(mockHelloTask);
+        obs.assertError(RuntimeException.class)
+           .assertErrorMessage(hello)
+           .dispose();
+
+        verify(mockHelloTask).addOnCompleteListener(any(OnCompleteListener.class));
+        verify(mockHelloTask).getException();
+    }
 }
