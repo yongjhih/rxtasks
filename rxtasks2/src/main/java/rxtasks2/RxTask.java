@@ -40,16 +40,25 @@ public final class RxTask {
     }
 
     /**
-     * @param task
-     * @param <R>
+     * @param task Not accept Task<Void>, @see #completes(Task) instead
+     * @param <R> Result
      * @return
      */
     @CheckReturnValue
     @NonNull
     public static <R> Single<R> single(@NonNull final Task<R> task) {
+        if (task.isComplete()) {
+            final Exception e = task.getException();
+            if (e != null) {
+                return Single.error(e);
+            } else {
+                return Single.just(task.getResult());
+            }
+        }
+
         return Single.create(new SingleOnSubscribe<R>() {
             @Override
-            public void subscribe(@NonNull final SingleEmitter<R> emit) throws Exception {
+            public void subscribe(@NonNull final SingleEmitter<R> emit) {
                 task.addOnCompleteListener(listener(emit));
             }
         });
@@ -80,6 +89,15 @@ public final class RxTask {
     @CheckReturnValue
     @NonNull
     public static <R> Completable completes(@NonNull final Task<R> task) {
+        if (task.isComplete()) {
+            final Exception e = task.getException();
+            if (e != null) {
+                return Completable.error(e);
+            } else {
+                return Completable.complete();
+            }
+        }
+
         return Completable.create(new CompletableOnSubscribe() {
             @Override
             public void subscribe(@NonNull final CompletableEmitter emit) throws Exception {
@@ -113,9 +131,18 @@ public final class RxTask {
     @CheckReturnValue
     @NonNull
     public static <R> Maybe<R> maybe(@NonNull final Task<R> task) {
+        if (task.isComplete()) {
+            final Exception e = task.getException();
+            if (e != null) {
+                return Maybe.error(e);
+            } else {
+                return Maybe.just(task.getResult());
+            }
+        }
+
         return Maybe.create(new MaybeOnSubscribe<R>() {
             @Override
-            public void subscribe(@NonNull final MaybeEmitter<R> emit) throws Exception {
+            public void subscribe(@NonNull final MaybeEmitter<R> emit) {
                 task.addOnCompleteListener(listener(emit));
             }
         });
@@ -133,15 +160,15 @@ public final class RxTask {
             @Override
             public void onComplete(@NonNull final Task<R> task) {
                 if (!emit.isDisposed()) {
-                    if (task.isSuccessful()) {
+                    final Exception e = task.getException();
+                    if (e != null) {
+                        emit.onError(e);
+                    } else {
                         R result = task.getResult();
                         if (result != null) {
                             emit.onSuccess(result);
                         }
                         emit.onComplete();
-                    } else {
-                        Exception e = task.getException();
-                        emit.onError(e != null ? e : new RuntimeException());
                     }
                 }
             }
@@ -160,11 +187,11 @@ public final class RxTask {
             @Override
             public void onComplete(@NonNull final Task<R> task) {
                 if (!emit.isDisposed()) {
-                    if (task.isSuccessful()) {
-                        emit.onComplete();
+                    final Exception e = task.getException();
+                    if (e != null) {
+                        emit.onError(e);
                     } else {
-                        Exception e = task.getException();
-                        emit.onError(e != null ? e : new RuntimeException());
+                        emit.onComplete();
                     }
                 }
             }
@@ -183,11 +210,11 @@ public final class RxTask {
             @Override
             public void onComplete(@NonNull final Task<R> task) {
                 if (!emit.isDisposed()) {
-                    if (task.isSuccessful()) {
-                        emit.onSuccess(task.getResult());
+                    final Exception e = task.getException();
+                    if (e != null) {
+                        emit.onError(e);
                     } else {
-                        Exception e = task.getException();
-                        emit.onError(e != null ? e : new RuntimeException());
+                        emit.onSuccess(task.getResult());
                     }
                 }
             }
